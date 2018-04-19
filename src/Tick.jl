@@ -21,16 +21,22 @@ tick(_::Ticker{T}, builder_value) where {T} = Nullable{T}()
 
 struct RootTicker{T} <: Ticker{T} end
 
-universe(dag, _::RootTicker{T}) where {T} = Universe()
-
+universe(_::RootTicker{T}) where {T} = Universe()
 
 
 
 include("dag.jl")
-
 include("evaldfs.jl")
-
 include("buf.jl")
 
+
+module Tkr
+
+using Tick: NTicker, Ticker, output_type, Latest
+import Tick: universe, tick
+
+include("tkr/add.jl")
+
+end
 
 end
