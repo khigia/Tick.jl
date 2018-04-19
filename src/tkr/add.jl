@@ -1,8 +1,9 @@
-# TODO generic output
-struct Add <: Ticker{Int}
+struct Add{T} <: Ticker{T}
     left_node
     right_node
 end
+
+Add(left::Node{LT}, right::Node{RT}) where {LT,RT} = Add{promote_type(LT,RT)}(left, right)
 
 function universe(tkr::Add)
     [

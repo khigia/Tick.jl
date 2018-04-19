@@ -32,7 +32,7 @@ include("buf.jl")
 
 module Tkr
 
-using Tick: NTicker, Ticker, output_type, Latest
+using Tick: Node, NTicker, Ticker, output_type, Latest
 import Tick: universe, tick
 
 include("tkr/add.jl")

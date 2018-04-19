@@ -10,10 +10,10 @@ Universe = Vector{NTicker}
 
 
 # Node in calculation graph
-struct Node
+struct Node{T}
     # TODO maybe could have a name (for debug)
     nid
-    ticker::Ticker
+    ticker::Ticker{T}
     builder # TODO RootTicker have empty builder that is never used
 end
 

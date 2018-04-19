@@ -49,6 +49,8 @@ function reset(b::Builder)
     reset.(b.bufs)  # broadcast ~ map
 end
 
+
+
 # TODO Fisrt, Collect, Reducer(fn) ... maybe no need for add/generate/reset, reduce/init is better
 
 struct Latest
