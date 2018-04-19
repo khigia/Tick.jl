@@ -2,6 +2,8 @@ using Base.Test
 
 using Tick: Dag, RootTicker, make_node!, onfire!, universe, tick
 using Tick: EvalDfs, fire
+using Tick: BVal, Latest
+using Tick.Tkr: Add
 
 # TODO FactCheck.jl
 

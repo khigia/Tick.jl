@@ -1,14 +1,8 @@
 
 TODO
 - Implementation design
-  - separating `make_node!` from `universe(Ticker)` is not obvious;
-    on one hand it is nice to have universe close to Ticker definition and close
-    to the associated `tick` method definition, but on the other hand we want
-    to be able to configure the edge buffers;
-    most probably `NTicker` need to be split in 2, having name and node reference
-    in Ticker construction, while `make_node!` would accept the edge buffer and
-    triggering logic.
-    - Maybe: add typing to Tick and Universe
+  - Maybe: add typing to ticker inputs (make_node! already has info)
+  - Builder value / ticker inputs looks like a row of dataframe (see batching)
   - Using a LightGraphs might looks heavy for the task, but ...
     - expose concepts (make obvious node and edge)
     - plotting the graph
@@ -25,7 +19,8 @@ TODO
   - dynamic list of inputs? (e.g. average, add, etc)
   - node that create node? (react on inputs to create new node during `tick`)
   - validity: ok, paused, invalid
-  - batching behaviour: ticker can declare if it support batching or not
+  - batching behaviour: ticker can declare if it support batching or not, in
+    which case inputs looks like a dataframe
   - Factory for Ticker (e.g. `Add(Sq(Sin(Root(X))),Sq(Cos(Root(Y))))` should
     translate in all nodes/tickers creation. Need to define a (recursive) Ticker
     representation in the line of type name and argument configuration.

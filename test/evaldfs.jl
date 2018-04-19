@@ -1,5 +1,3 @@
-using Tick: BVal
-using Tick.Tkr: Add
 
 @testset "EvalDfs" begin
     d = Dag()
@@ -7,7 +5,13 @@ using Tick.Tkr: Add
     rn1 = make_node!(d, RootTicker{Int}())
     rn2 = make_node!(d, RootTicker{Int}())
 
-    an = make_node!(d, Add(rn1, rn2))
+    an = make_node!(d,
+        Add(rn1, rn2),
+        [
+            (() -> Latest(0), true),
+            (() -> Latest(0), false),
+        ]
+    )
 
     res = Dict()
     onfire!(d, rn1.nid, v -> push!(get!(res, "rn1", []), v))

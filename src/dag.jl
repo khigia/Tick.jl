@@ -6,7 +6,6 @@ struct NTicker  # TODO rename to NodeRef? Edge?
     triggering
 end
 
-Universe = Vector{NTicker}
 
 
 # Node in calculation graph
@@ -14,7 +13,7 @@ struct Node{T}
     # TODO maybe could have a name (for debug)
     nid
     ticker::Ticker{T}
-    builder # TODO RootTicker have empty builder that is never used
+    builder
 end
 
 
@@ -34,9 +33,16 @@ function onfire!(d::Dag, src_nid, fn)
     _link!(d, src_nid, 0, fn)
 end
 
-function make_node!(d::Dag, ticker)
+function make_node!(d::Dag, ticker::RootTicker)
+    make_node!(d, ticker, [])
+end
+
+function make_node!(d::Dag, ticker, bufs)
     nid = d.nid[] += 1
-    uticks = universe(ticker)
+    uticks = [
+        NTicker(u..., b...)
+        for (u, b) in zip(universe(ticker), bufs)
+    ]
     builder = make_builder(uticks)
     n = Node(nid, ticker, builder)
 

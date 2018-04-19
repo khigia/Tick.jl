@@ -15,7 +15,7 @@ end
 
 
 struct Builder
-    nticks::Universe
+    nticks
     fields
     bufs  # TODO Vector{Combiner}
 end
@@ -41,7 +41,6 @@ function generate(b::Builder)  # TODO Nullable{BVal}
     BVal(  # TODO NamedTuple
         b.fields,  # dict are mutable, pass by ref
         [generate(buf) for buf in b.bufs],
-
     )
 end
 

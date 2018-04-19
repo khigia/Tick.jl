@@ -7,8 +7,8 @@ Add(left::Node{LT}, right::Node{RT}) where {LT,RT} = Add{promote_type(LT,RT)}(le
 
 function universe(tkr::Add)
     [
-        NTicker("left", tkr.left_node, () -> Latest(0), true),
-        NTicker("right", tkr.right_node, () -> Latest(0), false),
+        ("left", tkr.left_node),
+        ("right", tkr.right_node),
     ]
 end
 

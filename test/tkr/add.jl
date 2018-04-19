@@ -1,6 +1,3 @@
-using Tick: BVal
-using Tick.Tkr: Add
-
 @testset "AddTicker" begin
     d = Dag()
 
@@ -13,9 +10,14 @@ using Tick.Tkr: Add
 
     @test length(universe(at)) == 2
 
-    @inferred tick(at, BVal(Dict("left"=>1, "right"=>2), [2,3]))
-    @test get(tick(at, BVal(Dict("left"=>1, "right"=>2), [2,3]))) == 5
+    # TODO below looks like BVal utilities
+    cols = first.(universe(at))
+    keys = reverse.(cols |> enumerate |> collect) |> Dict
+    inputs(xs) = Dict(zip(cols, xs))
 
-    @inferred get(tick(at, Dict("left"=>3, "right"=>4)))
-    @test get(tick(at, Dict("left"=>3, "right"=>4))) == 7
+    @inferred tick(at, BVal(keys, [2,3]))
+    @test get(tick(at, BVal(keys, [2,3]))) == 5
+
+    @inferred get(tick(at, inputs([3,4])))
+    @test get(tick(at, inputs([3,4]))) == 7
 end
