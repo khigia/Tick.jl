@@ -1,4 +1,3 @@
-# Or from julia: Pkg.test("Tick")
 .PHONY: test
 test:
-	julia -L src/Tick.jl test/runtests.jl
+	julia --color=yes -e 'Pkg.test("Tick")'
