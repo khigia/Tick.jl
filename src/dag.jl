@@ -37,6 +37,14 @@ function make_node!(d::Dag, ticker::RootTicker)
     make_node!(d, ticker, [])
 end
 
+# TODO instead of one ticker and a list of nodes (universe), can probably have
+#      a list of pair <node, callback>
+#      the callback make the `tick` interface more generic, and the need for
+#      universe is replaced by the possibility to create a node using
+#      `combine` which does all the builder thingy if needed ... but note that
+#      this combined node is kind of unique (sharing semantic can be complexe).
+#      This make Ticker for simple thing like `add` easy to implement, while
+#      keeping more advance Ticker possibility (Ticker interface is not needed).
 function make_node!(d::Dag, ticker, bufs)
     nid = d.nid[] += 1
     uticks = [

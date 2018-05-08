@@ -1,6 +1,8 @@
 struct EvalDfs end
+# TODO doc sync, not real DFS
 
 function fire(eve::EvalDfs, d::Dag, src_nid, v)
+    # TODO doc async behaviour
     targets = Base.get(d.links, src_nid, [])
     # println("-- trigger $src_nid -> $targets")
     @sync for (dst_nid, f) in targets
@@ -25,8 +27,6 @@ function fire(eve::EvalDfs, d::Dag, src_nid, v)
                 tv = tick(dst.ticker, dd)
 
                 # simple approach: DFS style triggering
-                # TODO could store trigger, continue current trigger, and continue after (BFS style)
-                # or even use a toposort order and
                 if !isnull(tv)
                     fire(eve, d, dst.nid, get(tv))
                 end

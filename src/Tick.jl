@@ -27,6 +27,7 @@ universe(_::RootTicker{T}) where {T} = []
 
 include("dag.jl")
 include("evaldfs.jl")
+include("evaltsort.jl")
 include("buf.jl")
 
 
