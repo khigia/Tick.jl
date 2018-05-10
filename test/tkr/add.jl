@@ -1,23 +1,27 @@
-@testset "AddTicker" begin
+@testset "add!" begin
     d = Dag()
 
-    rn1 = make_node!(d, RootTicker{Int32}())
-    rn2 = make_node!(d, RootTicker{Int64}())
+    rn1 = make_node!(d, Int32)
+    rn2 = make_node!(d, Int64)
+    parents = [
+        ("left", rn1, Latest(0), true),
+        ("right", rn2, Latest(0), false),
+    ]
+    an = add!(d, parents)
 
+    @test Tick.eltype(an) == Int64  # promoted
 
-    at = Add(rn1, rn2)
-    @test typeof(at) == Add{Int64}  # promoted
+    res = []
+    onfire!(d, an.nid, v -> push!(res, v))
 
-    @test length(universe(at)) == 2
+    eve = EvalDfs()
+    fire(eve, d, rn1.nid, 42)
+    @test res == [42]
 
-    # TODO below looks like BVal utilities
-    cols = first.(universe(at))
-    keys = reverse.(cols |> enumerate |> collect) |> Dict
-    inputs(xs) = Dict(zip(cols, xs))
+    fire(eve, d, rn2.nid, 42)
+    @test res == [42]
 
-    @inferred tick(at, BVal(keys, [2,3]))
-    @test get(tick(at, BVal(keys, [2,3]))) == 5
+    fire(eve, d, rn1.nid, 42)
+    @test res == [42, 84]
 
-    @inferred get(tick(at, inputs([3,4])))
-    @test get(tick(at, inputs([3,4]))) == 7
 end

@@ -1,5 +1,6 @@
 
 # TODO can probably replace by NamedTuple
+# TODO at least need to keep type info
 struct BVal
     fields
     val
@@ -14,10 +15,19 @@ function getindex(bval::BVal, i)
 end
 
 
+# NTicker: ref to a node inside the Graph (reducer, triggering, name)
+struct NTicker
+    name
+    ticker_node
+    edgebuf
+    triggering
+end
+
+
 struct Builder
     nticks
     fields
-    bufs  # TODO Vector{Combiner}
+    bufs
 end
 
 function make_builder(nticks)
@@ -26,11 +36,11 @@ function make_builder(nticks)
     Builder(
         nticks,
         Dict(ntkr.name => i for (i, ntkr) in enumerate(nticks)),
-        [ntkr.edgebuf_factory() for ntkr in nticks],
+        [ntkr.edgebuf for ntkr in nticks],
     )
 end
 
-function add(b::Builder, i, v)
+function add(b::Builder, i, v)  # TODO push!
     return add(b.bufs[i], v) && b.nticks[i].triggering
 end
 
@@ -48,16 +58,48 @@ function reset(b::Builder)
     reset.(b.bufs)  # broadcast ~ map
 end
 
+function feed(b::Builder, i, v)
+    trig = add(b, i, v)
+    if trig
+        # TODO generate could still fail (e.g. missing required input)
+        bv = generate(b)
+        reset(b)
+        return Nullable(bv)
+    else
+        return Nullable()
+    end
+end
+
+# TODO multiple combine version could return Tuple, or BVal etc
+# TODO specialized version can just combine 2 node, with Latest semantic
+# TODO can keep type info
+function combine!(d::Dag, parents)
+    # TODO NTicker is not needed!
+    uticks = map(t->NTicker(t...), parents)
+    builder = make_builder(uticks)
+
+    bparents = [
+        (ntkr.ticker_node, v -> feed(builder, i, v))
+        for (i, ntkr) in enumerate(uticks)
+    ]
+
+    # TODO BVal loose the type kind of
+    return make_node!(d::Dag, BVal, bparents)
+end
 
 
-# TODO Fisrt, Collect, Reducer(fn) ... maybe no need for add/generate/reset, reduce/init is better
+
+
+# TODO Fisrt, Collect, Reducer(fn) ...
+# TODO maybe no need for add/generate/reset, reduce/init is better
+
 
 struct Latest
     v
     Latest(x) = new(Ref(x))
 end
 
-function add(aggr::Latest, v)
+function add(aggr::Latest, v)  # push!
     aggr.v[] = v
     true  # trigger
 end

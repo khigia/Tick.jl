@@ -7,24 +7,6 @@ Tick is a great module^** full of GoodThings.
 """
 module Tick
 
-export tick, universe
-
-
-
-abstract type Ticker{T} end
-
-output_type(_::Ticker{T}) where {T} = T
-
-tick(_::Ticker{T}, builder_value) where {T} = Nullable{T}()
-
-
-
-struct RootTicker{T} <: Ticker{T} end
-
-universe(_::RootTicker{T}) where {T} = []
-
-
-
 include("dag.jl")
 include("evaldfs.jl")
 include("evaltsort.jl")
@@ -33,8 +15,7 @@ include("buf.jl")
 
 module Tkr
 
-using Tick: Node, Ticker, output_type, Latest
-import Tick: universe, tick
+using Tick: Dag, Node, Latest, combine!, make_node!, eltype
 
 include("tkr/add.jl")
 

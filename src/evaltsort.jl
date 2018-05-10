@@ -39,7 +39,7 @@ function fire(eve::EvalTSort, d::Dag, src_nid, src_v)
     t_order = tsort(length(d.nodes), nid -> [n for (n,_) in d.links[nid] if n != 0])
 
     # TODO maybe have array of nullable instead of dict, and iterate in zip
-    firing = Dict(src_nid=>src_v)
+    firing = Dict{Int, Any}(src_nid=>src_v)
     for nid in t_order
         !haskey(firing, nid) && continue
 
@@ -58,23 +58,10 @@ function fire(eve::EvalTSort, d::Dag, src_nid, src_v)
             dst = d.nodes[dst_nid]
             # assert dst must be in rest of t_order
 
-            begin
-                cv = f(nid_v)  # feed builder edge buffer
-                if cv
-                    # Buf for this edge want to trigger the target node
-
-                    # TODO generate could still fail (e.g. missing required input)
-                    dd = generate(dst.builder)
-
-                    tv = tick(dst.ticker, dd)
-
-                    if !isnull(tv)
-                        assert(!haskey(firing, dst.nid))
-                        firing[dst.nid] = get(tv)
-                        # TODO builder reset probably NOT depending on tick ...
-                        reset(dst.builder)
-                    end
-                end
+            tv = f(nid_v)  # feed builder edge buffer
+            if !isnull(tv)
+                assert(!haskey(firing, dst.nid))
+                firing[dst.nid] = get(tv)
             end
         end
     end

@@ -1,21 +1,12 @@
-# NTicker: ref to a Ticker inside the Graph (reducer, triggering, name)
-struct NTicker  # TODO rename to NodeRef? Edge?
-    name
-    ticker_node
-    edgebuf_factory  # TODO type!
-    triggering
-end
-
 
 
 # Node in calculation graph
 struct Node{T}
     # TODO maybe could have a name (for debug)
     nid
-    ticker::Ticker{T}
-    builder
 end
 
+eltype(n::Node{T}) where {T} = T
 
 struct Dag
     nid::Ref{Int}  # node id generator (start at 1)
@@ -33,33 +24,17 @@ function onfire!(d::Dag, src_nid, fn)
     _link!(d, src_nid, 0, fn)
 end
 
-function make_node!(d::Dag, ticker::RootTicker)
-    make_node!(d, ticker, [])
+function make_node!(d::Dag, t::Type)
+    make_node!(d, t, [])
 end
 
-# TODO instead of one ticker and a list of nodes (universe), can probably have
-#      a list of pair <node, callback>
-#      the callback make the `tick` interface more generic, and the need for
-#      universe is replaced by the possibility to create a node using
-#      `combine` which does all the builder thingy if needed ... but note that
-#      this combined node is kind of unique (sharing semantic can be complexe).
-#      This make Ticker for simple thing like `add` easy to implement, while
-#      keeping more advance Ticker possibility (Ticker interface is not needed).
-function make_node!(d::Dag, ticker, bufs)
+function make_node!(d::Dag, t::Type, parents)
     nid = d.nid[] += 1
-    uticks = [
-        NTicker(u..., b...)
-        for (u, b) in zip(universe(ticker), bufs)
-    ]
-    builder = make_builder(uticks)
-    n = Node(nid, ticker, builder)
-
+    n = Node{t}(nid)
     d.nodes[nid] = n
-
-    for (i, ntkr) in enumerate(uticks)
-        src = ntkr.ticker_node
-        _link!(d, src.nid, nid, v -> add(builder, i, v))
+    # all fn must have same type Nullable{t}
+    for (pnode, fn) in parents
+        _link!(d, pnode.nid, nid, fn)
     end
-
     n
 end

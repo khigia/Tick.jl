@@ -1,17 +1,7 @@
-struct Add{T} <: Ticker{T}
-    left_node
-    right_node
-end
-
-Add(left::Node{LT}, right::Node{RT}) where {LT,RT} = Add{promote_type(LT,RT)}(left, right)
-
-function universe(tkr::Add)
-    [
-        ("left", tkr.left_node),
-        ("right", tkr.right_node),
-    ]
-end
-
-function tick(tkr::Add, input)::Nullable{output_type(tkr)}
-    return Nullable(input["left"] + input["right"])
+# TODO can have diff version, using combine or using 2 nodes directly
+function add!(d::Dag, parents)
+    # parents is similar to `combine!`
+    cn = combine!(d, parents)
+    ct = promote_type(map(p -> eltype(p[2]), parents)...)
+    return make_node!(d, ct, [(cn, v -> Nullable(sum(v.val)))])
 end

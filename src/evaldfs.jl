@@ -2,7 +2,9 @@ struct EvalDfs end
 # TODO doc sync, not real DFS
 
 function fire(eve::EvalDfs, d::Dag, src_nid, v)
+    # simple approach: DFS style triggering
     # TODO doc async behaviour
+    # TODO able to fire multiple concurrently
     targets = Base.get(d.links, src_nid, [])
     # println("-- trigger $src_nid -> $targets")
     @sync for (dst_nid, f) in targets
@@ -14,27 +16,11 @@ function fire(eve::EvalDfs, d::Dag, src_nid, v)
 
         # TODO store dst directly in targets?
         dst = d.nodes[dst_nid]
-        # assert dst is not RootTicker
 
         @async begin
-            cv = f(v)  # feed builder edge buffer
-            if cv
-                # Buf for this edge want to trigger the target node
-
-                # TODO generate could still fail (e.g. missing required input)
-                dd = generate(dst.builder)
-
-                tv = tick(dst.ticker, dd)
-
-                # simple approach: DFS style triggering
-                if !isnull(tv)
-                    fire(eve, d, dst.nid, get(tv))
-                end
-
-                if !isnull(tv)
-                    # TODO builder reset probably NOT depending on tick ...
-                    reset(dst.builder)
-                end
+            tv = f(v)
+            if !isnull(tv)
+                fire(eve, d, dst.nid, get(tv))
             end
         end
     end
