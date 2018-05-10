@@ -1,4 +1,4 @@
-d # Tick
+# Tick
 
 `Tick` is a package that evaluate graph of computation nodes.
 
@@ -22,10 +22,9 @@ experiment design and Julia programming.
   - `Documenter.jl` for API and global doc
   - Tutorial (maybe notebook)
 - Feature
-  - rename/move stuffs: `combine!`, `add!` in `ops.jl`, `node!` instead of
-    `make_node!`
   - `combine!` function need type and could have some shortcut like the
     `Reactive.jl` `@lift`
+  - grep code for `TODO`
   - Node could be force to always have a value (when not possible user can then
     use a nullable type) to not enforce Nullable when not needed?
   - validity: ok, paused, invalid (error propagation)

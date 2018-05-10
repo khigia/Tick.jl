@@ -1,8 +1,8 @@
 @testset "add!" begin
     d = Dag()
 
-    rn1 = make_node!(d, Int32)
-    rn2 = make_node!(d, Int64)
+    rn1 = node!(d, Int32)
+    rn2 = node!(d, Int64)
     parents = [
         ("left", rn1, Latest(0), true),
         ("right", rn2, Latest(0), false),

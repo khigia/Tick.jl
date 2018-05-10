@@ -48,14 +48,14 @@
         # TODO can share one example/test between DFS and TSORT to show diff?
         d = Dag()
 
-        rn1 = make_node!(d, Int64)
-        rn2 = make_node!(d, Int64)
+        rn1 = node!(d, Int64)
+        rn2 = node!(d, Int64)
 
         # rn12 = combine!(d, [
         #     ("left", rn1, Latest(0), true),
         #     ("right", rn2, Latest(0), true),
         # ])
-        # an = make_node!(d, Int64, [
+        # an = node!(d, Int64, [
         #     (rn12, v -> Nullable(v["left"] + v["right"])),
         # ])
         an = add!(d, [

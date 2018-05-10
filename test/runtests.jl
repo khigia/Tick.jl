@@ -1,18 +1,20 @@
 using Base.Test
 
-using Tick: Dag, make_node!, onfire!
-using Tick: EvalDfs, EvalTSort, fire
+using Tick: Dag, node!, onfire!
+using Tick: EvalDfs, EvalTSort, fire, tsort
+using Tick: Latest
 using Tick: BVal, Latest, combine!
-using Tick: tsort
-using Tick.Tkr: add!
+using Tick: add!
 
 # TODO FactCheck.jl
 
 const testdir = dirname(@__FILE__)
 
 @testset "Tick" begin
+    # include(joinpath(testdir, "dag.jl"))
     include(joinpath(testdir, "evaldfs.jl"))
-    include(joinpath(testdir, "buf.jl"))
     include(joinpath(testdir, "evaltsort.jl"))
-    include(joinpath(testdir, "tkr/add.jl"))
+    # include(joinpath(testdir, "buf.jl"))
+    include(joinpath(testdir, "combine.jl"))
+    include(joinpath(testdir, "ops.jl"))
 end

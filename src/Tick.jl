@@ -11,14 +11,7 @@ include("dag.jl")
 include("evaldfs.jl")
 include("evaltsort.jl")
 include("buf.jl")
-
-
-module Tkr
-
-using Tick: Dag, Node, Latest, combine!, make_node!, eltype
-
-include("tkr/add.jl")
-
-end
+include("combine.jl")
+include("ops.jl")
 
 end
