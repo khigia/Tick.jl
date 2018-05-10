@@ -1,10 +1,3 @@
-"""
-    Tick
-
-Tick is a great module^** full of GoodThings.
-
-** terms and conditions apply.
-"""
 module Tick
 
 include("dag.jl")

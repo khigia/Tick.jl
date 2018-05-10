@@ -19,8 +19,8 @@ experiment design and Julia programming.
 
 - Doc
   - have a real README
-  - `Documenter.jl` for API and global doc
   - Tutorial (maybe notebook)
+  - API doc
 - Feature
   - `combine!` function need type and could have some shortcut like the
     `Reactive.jl` `@lift`
