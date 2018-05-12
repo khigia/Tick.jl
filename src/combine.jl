@@ -1,12 +1,13 @@
+import Base.getindex
 
 # TODO can probably replace by NamedTuple
-# TODO at least need to keep type info
-struct BVal
+struct BVal{T <: Tuple}
     fields
-    val
+    val::T
 end
 
-import Base.getindex
+eltype(::Type{BVal{T}}) where {T} = T
+
 function getindex(bval::BVal, i::String)
     bval.val[bval.fields[i]]
 end
@@ -18,52 +19,53 @@ end
 # NTicker: ref to a node inside the Graph (reducer, triggering, name)
 struct NTicker
     name
-    ticker_node
-    edgebuf
+    node
+    buf
     triggering
 end
 
 
 struct Builder
-    nticks
     fields
     bufs
+    triggering
 end
 
-function make_builder(nticks)
-    # TODO ticks names must be unique
-    # TODO MUST have one triggering!
+function Builder(nticks)
+    # names must be unique
+    @assert length(Set([ntkr.name for ntkr in nticks])) == length(nticks)
+    # one edge must be triggering
+    @assert any([ntkr.triggering for ntkr in nticks])
+
     Builder(
-        nticks,
         Dict(ntkr.name => i for (i, ntkr) in enumerate(nticks)),
-        [ntkr.edgebuf for ntkr in nticks],
+        [ntkr.buf for ntkr in nticks],
+        [ntkr.triggering for ntkr in nticks],
     )
 end
 
-function add(b::Builder, i, v)  # TODO push!
-    return add(b.bufs[i], v) && b.nticks[i].triggering
+function push!(b::Builder, i, v)
+    return push!(b.bufs[i], v) && b.triggering[i]
 end
 
-function generate(b::Builder)  # TODO Nullable{BVal}
+function generate(b::Builder)  # TODO Nullable
     # TODO even if triggering, maybe can ask each aggregator if
     #      they are ready (maybe some don't want the universe to be
     #      created if they have no value)
-    BVal(  # TODO NamedTuple
+    BVal(
         b.fields,  # dict are mutable, pass by ref
-        [generate(buf) for buf in b.bufs],
+        Tuple(generate.(b.bufs)),
     )
 end
 
-function reset(b::Builder)
-    reset.(b.bufs)  # broadcast ~ map
-end
+reset!(b::Builder) = reset!.(b.bufs)
 
 function feed(b::Builder, i, v)
-    trig = add(b, i, v)
+    trig = push!(b, i, v)
     if trig
         # TODO generate could still fail (e.g. missing required input)
         bv = generate(b)
-        reset(b)
+        reset!(b)
         return Nullable(bv)
     else
         return Nullable()
@@ -71,18 +73,32 @@ function feed(b::Builder, i, v)
 end
 
 # TODO multiple combine version could return Tuple, or BVal etc
-# TODO specialized version can just combine 2 node, with Latest semantic
-# TODO can keep type info
 function combine!(d::Dag, parents)
-    # TODO NTicker is not needed!
+    # TODO NTicker is not needed ... but parents could benefit type for doc
     uticks = map(t->NTicker(t...), parents)
-    builder = make_builder(uticks)
+    builder = Builder(uticks)
+
+    TX = map(ut->eltype(ut.node), uticks)
+    OT = BVal{Tuple{TX...}}
 
     bparents = [
-        (ntkr.ticker_node, v -> feed(builder, i, v))
+        (ntkr.node, v -> feed(builder, i, v))
         for (i, ntkr) in enumerate(uticks)
     ]
 
     # TODO BVal loose the type kind of
-    return node!(d::Dag, BVal, bparents)
+    return node!(d::Dag, OT, bparents)
+end
+
+# TODO combine assuming Latest/init and apply a function to all parts
+function apply!(d::Dag, fun, init, nodes...)
+    CT = mapreduce(eltype, promote_type, nodes)
+    bufs = [Latest(init) for n in nodes]
+    return node!(d, CT, [
+        (n, v -> begin
+            push!(bufs[i], v)
+            Nullable(fun(map(generate, bufs)))
+        end)
+        for (i, n) in enumerate(nodes)
+    ])
 end

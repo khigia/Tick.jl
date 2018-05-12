@@ -24,7 +24,7 @@ import Base.==
 
     eve = EvalDfs()
     fire(eve, d, rn1.nid, 42)
-    @test res == Any[BVal(keys, [42,0])]
+    @test res == Any[BVal(keys, (42, 0))]
 
     # TODO for testing, would be cool to have a value(an) to get latest
     #      produced value ... might as well be useful outside testing

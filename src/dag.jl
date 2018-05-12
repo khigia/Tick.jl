@@ -2,6 +2,8 @@
     Node{T}
 
 Computation node with output of type `T`.
+
+Should always be constructed indirectly through `node!`(@ref) or combinator.
 """
 struct Node{T}
     # TODO maybe could have a name (for debug)
@@ -61,7 +63,7 @@ end
 When given `parents`, create edge from parents to created node.
 
 The `parents` is a sequence of pair of node identifier and function; function
-should expect the parent node output type.
+should expect the parent node output type and return `Nullable{t}`.
 """
 function node!(d::Dag, t::Type, parents)
     nid = d.nid[] += 1
@@ -73,3 +75,5 @@ function node!(d::Dag, t::Type, parents)
     end
     n
 end
+
+# TODO node! when given single parent and single function (transformer node)

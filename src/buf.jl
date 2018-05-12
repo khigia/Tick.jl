@@ -7,11 +7,11 @@ struct Latest
     Latest(x) = new(Ref(x))
 end
 
-function add(aggr::Latest, v)  # push!
+function push!(aggr::Latest, v)
     aggr.v[] = v
     true  # trigger
 end
 
 generate(aggr::Latest) = aggr.v[]
 
-reset(aggr::Latest) = nothing  # always keep latest
+reset!(aggr::Latest) = nothing  # always keep latest
