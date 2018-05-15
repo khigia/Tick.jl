@@ -15,3 +15,14 @@ end
 function add!(d::Dag, nodes...)
     return apply!(d, sum, 0, nodes...)
 end
+
+
+function first!(d::Dag, node::Node{T}) where {T<:Tuple}
+    E1 = eltype(node).types[1]
+    node!(d, E1, [(node, v -> Nullable(first(v)))])
+end
+
+function last!(d::Dag, node::Node{T}) where {T<:Tuple}
+    EE = eltype(node).types[end]
+    node!(d, EE, [(node, v -> Nullable(last(v)))])
+end

@@ -51,13 +51,6 @@
         rn1 = node!(d, Int64)
         rn2 = node!(d, Int64)
 
-        # rn12 = combine!(d, [
-        #     ("left", rn1, Latest(0), true),
-        #     ("right", rn2, Latest(0), true),
-        # ])
-        # an = node!(d, Int64, [
-        #     (rn12, v -> Nullable(v["left"] + v["right"])),
-        # ])
         an = add!(d, [
             ("left", rn1, Latest(0), true),
             ("right", rn2, Latest(0), true),
@@ -71,6 +64,26 @@
         eve = EvalTSort()
         fire(eve, d, rn1.nid, 42)
         @test res == ["rn1:42", "an:42"]
+    end
+
+    @testset "eliding" begin
+        d = Dag()
+
+        rn1 = node!(d, Tuple{Int64, Int64})
+        rn11 = first!(d, rn1)
+        rn12 = last!(d, rn1)
+
+        an = add!(d, [
+            ("left", rn11, Latest(0), true),
+            ("right", rn12, Latest(0), true),
+        ])
+
+        res = []
+        onfire!(d, an.nid, v -> push!(res, v))
+
+        eve = EvalTSort()
+        fire(eve, d, rn1.nid, (1, 2))
+        @test res == [3]
     end
 
 end

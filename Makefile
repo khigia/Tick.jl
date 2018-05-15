@@ -6,3 +6,5 @@ test:
 doc:
 	cd docs && julia make.jl
 	# in atom, ctrl-shift-m to see preview
+	# xdg-open docs/build/index.html
+

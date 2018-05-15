@@ -1,7 +1,7 @@
 site_name:        Tick.jl
-repo_url:         https://gitlab.grass.corp/p/Tick.jl
-site_description: About Tick obviously
-site_author:      Thi Sisme
+repo_url:         https://github.com/khigia/Tick.jl
+site_description: Tick.jl computation graph
+site_author:      Ludovic Coquelle
 
 theme: readthedocs
 

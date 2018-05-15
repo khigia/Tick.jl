@@ -36,6 +36,7 @@ struct EvalTSort end
 function fire(eve::EvalTSort, d::Dag, src_nid, src_v)
     # TODO assume Dag is static (or at least no new node can fire during fire)
     #      SimpleTrait could help here
+    # TODO caching of tsort result, reuse of `firing` memory etc
     t_order = tsort(length(d.nodes), nid -> [n for (n,_) in d.links[nid] if n != 0])
 
     # TODO maybe have array of nullable instead of dict, and iterate in zip
@@ -60,7 +61,9 @@ function fire(eve::EvalTSort, d::Dag, src_nid, src_v)
 
             tv = f(nid_v)  # feed builder edge buffer
             if !isnull(tv)
-                assert(!haskey(firing, dst.nid))
+                # nodes are evaluated in sequence, and eliding previous values
+                # i.e. only the latest value is kept potentially overwriting
+                # a previous value
                 firing[dst.nid] = get(tv)
             end
         end

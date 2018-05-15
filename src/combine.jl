@@ -1,6 +1,6 @@
 import Base.getindex
 
-# TODO can probably replace by NamedTuple
+# TODO can probably be replaced by NamedTuple
 struct BVal{T <: Tuple}
     fields
     val::T
@@ -72,7 +72,8 @@ function feed(b::Builder, i, v)
     end
 end
 
-# TODO multiple combine version could return Tuple, or BVal etc
+# TODO multiple combine version could handle other type than BVal, e.g. Array
+#      or even splatting small number of parent values
 function combine!(d::Dag, parents)
     # TODO NTicker is not needed ... but parents could benefit type for doc
     uticks = map(t->NTicker(t...), parents)
@@ -86,11 +87,10 @@ function combine!(d::Dag, parents)
         for (i, ntkr) in enumerate(uticks)
     ]
 
-    # TODO BVal loose the type kind of
     return node!(d::Dag, OT, bparents)
 end
 
-# TODO combine assuming Latest/init and apply a function to all parts
+# combine assuming Latest/init and apply a function to all parts
 function apply!(d::Dag, fun, init, nodes...)
     CT = mapreduce(eltype, promote_type, nodes)
     bufs = [Latest(init) for n in nodes]
