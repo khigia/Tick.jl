@@ -7,8 +7,8 @@
 
         # complete form using combine! inetrnally
         parents = [
-            ("left", rn1, Latest(0), true),
-            ("right", rn2, Latest(0), false),
+            ("left", rn1, latest(0), true),
+            ("right", rn2, latest(0), false),
         ]
         an = add!(d, parents)
         @test Tick.eltype(an) == Int64  # promoted

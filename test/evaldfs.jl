@@ -6,8 +6,8 @@
         rn2 = node!(d, Int64)
 
         an = add!(d, [
-            ("left", rn1, Latest(0), true),
-            ("right", rn2, Latest(0), false),
+            ("left", rn1, latest(0), true),
+            ("right", rn2, latest(0), false),
         ])
 
         res = Dict()
@@ -40,8 +40,8 @@
         rn12 = last!(d, rn1)
 
         an = add!(d, [
-            ("left", rn11, Latest(0), true),
-            ("right", rn12, Latest(0), true),
+            ("left", rn11, latest(0), true),
+            ("right", rn12, latest(0), true),
         ])
 
         res = Dict()

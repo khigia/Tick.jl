@@ -1,5 +1,53 @@
 import Base.getindex
 
+
+## Implement some edge buffering
+
+# TODO Other type needed? Fisrt, Collect, Win ...
+
+# TODO Do we want to give it a type (such that src node type can be matched)?
+
+# TODO looks like we have one level too many: combine keep Builder which keep
+#      Buf which keep state ... can builder keep state and buf be function only?
+
+struct RefReducer
+    state
+    reduce_fn
+    reset_fn
+    generate_fn
+
+    RefReducer(state, reduce_fn, generate_fn, reset_fn) = new(
+        Ref(state),
+        reduce_fn,
+        generate_fn,
+        reset_fn
+    )
+end
+
+RefReducer(state, reduce_fn) = RefReducer(
+    state,
+    reduce_fn,
+    s -> s,  # generate: extract full Ref value
+    s -> s  # reset: do nothing
+)
+
+function push!(aggr::RefReducer, v)
+    aggr.state[] = aggr.reduce_fn(aggr.state[], v)
+end
+
+generate(aggr::RefReducer) = aggr.generate_fn(aggr.state[])
+
+function reset!(aggr::RefReducer)
+    aggr.state[] = aggr.reset_fn(aggr.state[])
+end
+
+
+latest(st) = RefReducer(st, (s,v) -> v)
+
+
+
+## Implement combination of node values
+
 # TODO can probably be replaced by NamedTuple
 struct BVal{T <: Tuple}
     fields
@@ -45,7 +93,8 @@ function Builder(nticks)
 end
 
 function push!(b::Builder, i, v)
-    return push!(b.bufs[i], v) && b.triggering[i]
+    push!(b.bufs[i], v)
+    return b.triggering[i]
 end
 
 function generate(b::Builder)  # TODO Nullable
@@ -93,7 +142,7 @@ end
 # combine assuming Latest/init and apply a function to all parts
 function apply!(d::Dag, fun, init, nodes...)
     CT = mapreduce(eltype, promote_type, nodes)
-    bufs = [Latest(init) for n in nodes]
+    bufs = [latest(init) for n in nodes]
     return node!(d, CT, [
         (n, v -> begin
             push!(bufs[i], v)

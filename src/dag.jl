@@ -25,8 +25,8 @@ Directed Acyclic Graph of [`Node{T}`](@ref).
 """
 struct Dag
     nid::Ref{Int}  # node id generator (start at 1)
-    nodes # nid => Node
-    links  # nid => [(nid,fn)]
+    nodes # nid => Node  # TODO array instead of Dict
+    links  # nid => [(nid,fn)]  # TODO array instead of Dict
 
     Dag() = new(Ref(0), Dict(), Dict())
 end
@@ -75,5 +75,3 @@ function node!(d::Dag, t::Type, parents)
     end
     n
 end
-
-# TODO node! when given single parent and single function (transformer node)

@@ -9,8 +9,8 @@ import Base.==
     rn1 = node!(d, Int32)
     rn2 = node!(d, Int64)
     parents = [
-        ("left", rn1, Latest(0), true),
-        ("right", rn2, Latest(0), false),
+        ("left", rn1, latest(0), true),
+        ("right", rn2, latest(0), false),
     ]
     an = combine!(d, parents)
 

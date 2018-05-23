@@ -33,12 +33,16 @@ Note: this implementation is mostly an exercise in learning Julia.
 ## TODO
 
 - grep code for `TODO`
-- complexe graph example testing main features
+- examples testing main features
+  - generating bar data (time based firing)
+  - spread price with MA (listen to combined data)
+  - ... (simultaneous firing)
 - possible design change: `Node` could be forced to always have a value (when
   not available user can then use a `Nullable`). This would allow more type
-  discovery, and probably would make the whole computation lighter. On the
-  other hand, children node would receive `Nullable` value not unpacked, and
-  this would require another mechanism for a `Node` to not produce a value.
+  discovery, and probably would make the whole computation lighter, removing
+  need for edge buffer. On the other hand, children node would receive
+  `Nullable` value not unpacked, and this would require another mechanism for a
+  `Node` to not produce a value.
 - Doc: API
 - validity or error propagation: ok, paused, invalid
 - provide default for `Dag`, `Evaluator` etc to make simple graph easy
@@ -64,4 +68,3 @@ Note: this implementation is mostly an exercise in learning Julia.
 - Julia: better test
 - Julia: benchmark (many nodes, many inputs)
 - Julia: Package shape
-
