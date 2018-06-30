@@ -26,7 +26,7 @@ Directed Acyclic Graph of [`Node{T}`](@ref).
 struct Dag
     nid::Ref{Int}  # node id generator (start at 1)
     nodes # nid => Node  # TODO array instead of Dict
-    links  # nid => [(nid,fn)]  # TODO array instead of Dict
+    links  # nid => [(nid,fn)]  # TODO array instead of Dict (or store in Node)
 
     Dag() = new(Ref(0), Dict(), Dict())
 end
@@ -63,15 +63,48 @@ end
 When given `parents`, create edge from parents to created node.
 
 The `parents` is a sequence of pair of node identifier and function; function
-should expect the parent node output type and return `Nullable{t}`.
+should expect one argument of the parent node output type and should return a
+value of type `Nullable{t}`. Note that all the functions should return the same
+type.
 """
 function node!(d::Dag, t::Type, parents)
     nid = d.nid[] += 1
     n = Node{t}(nid)
     d.nodes[nid] = n
-    # all fn must have same type Nullable{t}
     for (pnode, fn) in parents
+        # all fn must have same return type Nullable{t}
+
+        # TODO fn type could be checked through undocumented (not recommended)
+        #      function `return_types` but this seems to fail for combine!
+        # @assert Base.return_types(fn, (eltype(pnode),)) == [Nullable{t}]
+        # TODO can we use functor (link below) to ensure fn(eltype(pnode)) isa Nullable{t}
+        # # https://discourse.julialang.org/t/enforcing-function-signatures-by-both-argument-return-types/8174
+        # struct Functor{T,R} f end
+        # function (ff::Functor{T,R})(x::T)::R where {T,R}
+        #     R(ff.f(x))  # not sure if R() is needed
+        # end
+        # this would raise at call time if f is not ok ... probably inefficient.
+        # Another approach is to define new type for each callback and not have
+        # f as a field by embedding in type method definition
+        # TODO or https://github.com/mauro3/SimpleTraits.jl and enforce user
+        # to pass a specific type
+        # TODO or https://github.com/yuyichao/FunctionWrappers.jl
+        # TODO or just removed Node typing altogether?
+
         _link!(d, pnode.nid, nid, fn)
     end
     n
+end
+
+"""
+    return_type_fn1(fn, T)
+
+Return type returned by calling fn with one argument of type T.
+
+fn must be type stable, else AssertionError is raised.
+"""
+function return_type_fn1(fn, input_type)
+    rets = Base.return_types(fn, (input_type,))
+    @assert length(rets) == 1
+    return first(rets)
 end

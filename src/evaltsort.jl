@@ -61,9 +61,9 @@ function fire(eve::EvalTSort, d::Dag, src_nid, src_v)
 
             tv = f(nid_v)  # feed builder edge buffer
             if !isnull(tv)
-                # nodes are evaluated in sequence, and eliding previous values
-                # i.e. only the latest value is kept potentially overwriting
-                # a previous value
+                # nodes are evaluated in sequence, eliding previous values
+                # i.e. if a node produce multiple values (triggered by multiple
+                # parents) only the latest produced value is kept.
                 firing[dst.nid] = get(tv)
             end
         end

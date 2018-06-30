@@ -26,3 +26,26 @@ function last!(d::Dag, node::Node{T}) where {T<:Tuple}
     EE = eltype(node).types[end]
     node!(d, EE, [(node, v -> Nullable(last(v)))])
 end
+
+# TODO nth!
+
+# create a moving window node, i.e. transform input in vector of last N values
+# TODO maybe remove the fn (can be a separate node)
+# TODO maybe have a diff output: instead of vector could also output what's
+#      added and what's removed (for online stream calculation) ... maybe a
+#      diff win! interface can do that
+function win!(d::Dag, node::Node, n, fn=identity)
+    EE = Vector{eltype(node)}
+    # TODO Datastructures.jl CircularDeque
+    vec = EE()
+
+    NT = return_type_fn1(fn, EE)
+
+    function win_push!(vec, n, v)
+        while length(vec) >= n
+            shift!(vec)
+        end
+        push!(vec, v)
+    end
+    node!(d, NT, [(node, v -> Nullable(win_push!(vec, n, v) |> fn))])
+end

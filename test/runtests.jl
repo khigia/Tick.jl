@@ -4,7 +4,7 @@ using Tick: Dag, node!, onfire!
 using Tick: EvalDfs, EvalTSort, fire, tsort
 using Tick: latest
 using Tick: BVal, combine!
-using Tick: add!, first!, last!
+using Tick: add!, first!, last!, win!
 
 # TODO FactCheck.jl
 
