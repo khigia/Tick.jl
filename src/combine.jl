@@ -1,54 +1,36 @@
 import Base.getindex
 
 
-## Implement some edge buffering
+## Implement some edge buffering/connector
 
-# TODO Other type needed? Fisrt, Collect, Win ...
+# TODO how to declare/document interface?
 
-# TODO Do we want to give it a type (such that src node type can be matched)?
-
-# TODO looks like we have one level too many: combine keep Builder which keep
-#      Buf which keep state ... can builder keep state and buf be function only?
-
-struct RefReducer
+struct Latest
     state
-    reduce_fn
-    reset_fn
-    generate_fn
-
-    RefReducer(state, reduce_fn, generate_fn, reset_fn) = new(
-        Ref(state),
-        reduce_fn,
-        generate_fn,
-        reset_fn
-    )
 end
 
-RefReducer(state, reduce_fn) = RefReducer(
-    state,
-    reduce_fn,
-    s -> s,  # generate: extract full Ref value
-    s -> s  # reset: do nothing
-)
+push!(aggr::Latest, v) = aggr.state[] = v
 
-function push!(aggr::RefReducer, v)
-    aggr.state[] = aggr.reduce_fn(aggr.state[], v)
-end
+generate(aggr::Latest) = aggr.state[]
 
-generate(aggr::RefReducer) = aggr.generate_fn(aggr.state[])
+# TODO `generate` could imply `reset` (one interface only)
+reset!(aggr::Latest) = nothing
 
-function reset!(aggr::RefReducer)
-    aggr.state[] = aggr.reset_fn(aggr.state[])
-end
-
-
-latest(st) = RefReducer(st, (s,v) -> v)
+"""
+    latest create a connector that always return last seen value.
+"""
+latest(st) = Latest(Ref(st))
 
 
 
 ## Implement combination of node values
 
 # TODO can probably be replaced by NamedTuple
+"""
+    BVal
+
+Value created by a Builder (combining multiple node into Tuple)
+"""
 struct BVal{T <: Tuple}
     fields
     val::T
@@ -72,7 +54,11 @@ struct NTicker
     triggering
 end
 
+"""
+    Builder combine multiple node inputs into one output.
 
+Internal component used by `combine`.
+"""
 struct Builder
     fields
     bufs
@@ -150,4 +136,15 @@ function apply!(d::Dag, fun, init, nodes...)
         end)
         for (i, n) in enumerate(nodes)
     ])
+end
+
+
+"""
+    tr!(d::Dag, parent::Node, fun::Function)
+
+Create a new node transforming any parent input through `fn`.
+"""
+function tr!(d::Dag, parent, fn)
+    NT = return_type_fn1(fn, eltype(parent))
+    node!(d, NT, [(parent, x->Nullable(fn(x)))])
 end

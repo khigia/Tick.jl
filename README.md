@@ -1,6 +1,6 @@
-# Tick
-
 `Tick` is a package that evaluate a graph of computation nodes.
+
+This is an experimental and not finished toy!
 
 Its design originate from financial application where various discrete feed
 events are continuously generating derived signal feeds. A simple example is
@@ -9,17 +9,18 @@ price feeds i.e. `spread = ma(P1) - ma(P2)`. This is something that reactive
 programming excel at. But even in this contrived example, it is sometimes needed
 to declare what happen to `spread` when only `P1` change, or to make sure no
 intermediate value of `spread` is computed if both `P1` and `P2` are changed
-"simultaneously".
+"simultaneously". In short, it is sometimes useful to describe explicitly how
+events can be synchronized in the computation graph.
 
 This package is thus an experiment, using reactive programming concept, but
 focusing mainly on declaring nodes relationship with regard to evaluation.
 There are some inspirations (not enough!) of some great reactive (or data flow)
-libraries like `google dataflow`, `Rx`, `Reactive.jl`, `Rust futures Stream`.
+libraries like beam`, `Rx`, `Reactive.jl`, or `Rust futures Stream`.
 
 Key aspect of `Tick.jl`
 - Focus on universe declaration (`combine!`): a node declare its parents but
   also how values are passed around (e.g. eliding of multiple node activation in
-  topologically sorted evaluation cycle). Goal is to make explicit
+  topologically sorted evaluation cycle). Goal is to make explicit the
   synchronization of node inputs, but leave implementation to the evaluator.
 - Mostly static graph and typing is used to manage some coherence at graph
   construction time.
@@ -27,12 +28,13 @@ Key aspect of `Tick.jl`
   allow experimenting with multiple graphs (possibly hierarchical) as well as
   parallel and remote evaluation.
 
-Note: this implementation is mostly an exercise in learning Julia.
+Note: this implementation is mostly an exercise in learning Julia (no
+expectation on performance) as well as a place for prototyping.
 
 
 ## TODO
 
-- grep code for `TODO`
+- grep code for `TODO` ... notably removing type declaration for Node (dag.jl)
 - examples testing main features
   - generating bar data (time based firing)
   - spread price with MA (listen to combined data)
@@ -55,8 +57,7 @@ Note: this implementation is mostly an exercise in learning Julia.
   - may want to introduce SimpleTraits to know if graph is static;
     also note that different distribution schemes may not allow strict
     topological evaluation
-- node that create node? (react on inputs to create new node during
-  evaluation)
+- dynamic graph (node that create node)
 - batching behavior: node can declare if it support batching or not, in
   which case inputs looks like a dataframe
 - distribution scheme: can some nodes be remote? (dagger like)
@@ -67,4 +68,4 @@ Note: this implementation is mostly an exercise in learning Julia.
   - note that LightGraphs does funny things when removing vertex!
 - Julia: better test
 - Julia: benchmark (many nodes, many inputs)
-- Julia: Package shape
+- Julia: make it a real Package

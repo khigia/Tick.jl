@@ -67,6 +67,21 @@
         @test res == ["fortytwo"]
     end
 
+    @testset "nth!" begin
+        d = Dag()
+
+        pn = node!(d, Tuple{Int,String,Float64})
+        an = nth!(d, pn, 2)
+        @test Tick.eltype(an) == String
+
+        res = []
+        onfire!(d, an.nid, v -> push!(res, v))
+
+        eve = EvalDfs()
+        fire(eve, d, pn.nid, (42, "fortytwo", 3.14))
+        @test res == ["fortytwo"]
+    end
+
     @testset "win!" begin
         d = Dag()
 
@@ -75,7 +90,8 @@
         an = win!(d, pn, 3)
         @test Tick.eltype(an) == Vector{Int}
 
-        ma = win!(d, pn, 3, mean)
+        wn = win!(d, pn, 3)
+        ma = tr!(d, wn, mean)
         @test Tick.eltype(ma) == Float64
         # TODO is passing transformer here ok? shouldn't transformer just be
         #      a new node? it seems more efficient this way, but is it right?
@@ -102,14 +118,6 @@
         @test resf ≈ [1.0, 1.5, 2.0, 3.0]
     end
 
-    # TODO let's do moving average
-    #   pn = node!(d, Int)
-    #   an = win!(d, pn, 3)
-    #   ma = tr!(d, an, Float, mean) # ~ node!(d, Float, [(an, mean])
-    # can we do something like?
+    # TODO can we do something like?
     #   d |>> node!(Int) |>> win!(3) |>> tr!(Float, mean)
-    #   where tr!(d, pnode, typ, fn) = node!(d, typ, [(pnode, fn])
-    # can we infer Float from `tr!(d, an, mean)` by knowing `eltype(an)` and
-    # using something like Base.return_types(mean, (Vector{Int},))?
-    # https://groups.google.com/forum/#!topic/julia-users/gb_DR5EzmV4
 end

@@ -26,12 +26,19 @@ Directed Acyclic Graph of [`Node{T}`](@ref).
 struct Dag
     nid::Ref{Int}  # node id generator (start at 1)
     nodes # nid => Node  # TODO array instead of Dict
+
+    # TODO current typing is weak ... could remove ... or could replace the
+    #      link function with Connector{T} type to make sure Node links would
+    #      contain only expected connector type
+    #      ... maybe have branch without type, and from there see if we can
+    #      build new version to reify connector.
     links  # nid => [(nid,fn)]  # TODO array instead of Dict (or store in Node)
 
     Dag() = new(Ref(0), Dict(), Dict())
 end
 
 function _link!(d::Dag, src_nid, dst_nid, fn)
+    # TODO check type fn vs src_nid?
     push!(get!(d.links, src_nid, []), (dst_nid, fn))
 end
 
@@ -102,6 +109,9 @@ end
 Return type returned by calling fn with one argument of type T.
 
 fn must be type stable, else AssertionError is raised.
+
+Note: guessing type is not recommended:
+      https://groups.google.com/forum/#!topic/julia-users/gb_DR5EzmV4
 """
 function return_type_fn1(fn, input_type)
     rets = Base.return_types(fn, (input_type,))

@@ -18,34 +18,38 @@ end
 
 
 function first!(d::Dag, node::Node{T}) where {T<:Tuple}
-    E1 = eltype(node).types[1]
-    node!(d, E1, [(node, v -> Nullable(first(v)))])
+    nth!(d, node, 1)
 end
 
 function last!(d::Dag, node::Node{T}) where {T<:Tuple}
-    EE = eltype(node).types[end]
-    node!(d, EE, [(node, v -> Nullable(last(v)))])
+    # Cannot call nth! directly as below
+    # because `end` is not recognize as last elt index
+    # nth!(d, node, end)
+    nth!(d, node, length(eltype(node).types))
 end
 
-# TODO nth!
+function nth!(d::Dag, node::Node{T}, n) where {T<:Tuple}
+    EE = eltype(node).types[n]
+    node!(d, EE, [(node, v -> Nullable(v[n]))])
+end
+
 
 # create a moving window node, i.e. transform input in vector of last N values
-# TODO maybe remove the fn (can be a separate node)
 # TODO maybe have a diff output: instead of vector could also output what's
 #      added and what's removed (for online stream calculation) ... maybe a
 #      diff win! interface can do that
-function win!(d::Dag, node::Node, n, fn=identity)
+function win!(d::Dag, node::Node, n)
     EE = Vector{eltype(node)}
     # TODO Datastructures.jl CircularDeque
     vec = EE()
 
-    NT = return_type_fn1(fn, EE)
-
-    function win_push!(vec, n, v)
+    function win_push!(v)
         while length(vec) >= n
             shift!(vec)
         end
         push!(vec, v)
     end
-    node!(d, NT, [(node, v -> Nullable(win_push!(vec, n, v) |> fn))])
+
+    # node!(d, EE, [(node, v -> Nullable(win_push!(v)))])
+    tr!(d, node, win_push!)
 end
